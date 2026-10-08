@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Gridiron | A Fan's Guide to the NFL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07100c;
+    --bg-2: #0c1913;
+    --card: #10211a;
+    --line: rgba(255,255,255,0.08);
+    --text: #eef3ef;
+    --muted: #9db3a6;
+    --turf: #2fbf71;
+    --turf-dark: #14532d;
+    --signal: #ff6b2c;
+    --gold: #f5c542;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Archivo', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+  .display { font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; line-height: 0.95; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    background: rgba(7,16,12,0.75);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: 'Bebas Neue'; font-size: 28px; letter-spacing: 2px; }
+  .brand .ball {
+    width: 30px; height: 18px; background: #8b4a22; border-radius: 50%;
+    position: relative; transform: rotate(-30deg);
+    box-shadow: inset -3px -2px 0 rgba(0,0,0,0.25);
+  }
+  .brand .ball::after {
+    content: ''; position: absolute; left: 8px; right: 8px; top: 8px; height: 2px; background: #fff; border-radius: 2px;
+  }
+  .links { display: flex; gap: 28px; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+  .links a { color: var(--muted); transition: color .2s; }
+  .links a:hover { color: var(--turf); }
+
+  /* HERO */
+  .hero {
+    position: relative; min-height: 100vh; display: flex; align-items: center;
+    padding: 120px 0 80px;
+    background:
+      radial-gradient(ellipse at 70% 30%, rgba(47,191,113,0.25), transparent 60%),
+      radial-gradient(ellipse at 10% 90%, rgba(255,107,44,0.15), transparent 50%),
+      var(--bg);
+    overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), rgba(255,255,255,0.05) calc(10% - 2px) 10%);
+    mask-image: linear-gradient(180deg, transparent, #000 30%, #000 70%, transparent);
+  }
+  .yard-numbers {
+    position: absolute; bottom: 40px; left: 0; right: 0;
+    display: flex; justify-content: space-around;
+    font-family: 'Bebas Neue'; font-size: 48px; color: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .hero .wrap { position: relative; z-index: 2; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(47,191,113,0.12); border: 1px solid rgba(47,191,113,0.4);
+    color: var(--turf); padding: 6px 14px; border-radius: 999px;
+    font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--turf); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
+  .hero h1 { font-size: clamp(64px, 12vw, 168px); margin: 24px 0 12px; }
+  .hero h1 .accent { color: var(--signal); }
+  .hero h1 .outline { -webkit-text-stroke: 2px var(--text); color: transparent; }
+  .hero p.lead { font-size: clamp(17px, 2vw, 21px); color: var(--muted); max-width: 580px; }
+  .cta-row { display: flex; gap: 14px; margin-top: 36px; flex-wrap: wrap; }
+  .btn {
+    padding: 14px 28px; border-radius: 999px; font-weight: 700; font-size: 15px;
+    transition: transform .2s, box-shadow .2s; display: inline-block;
+  }
+  .btn-primary { background: var(--turf); color: #04170d; box-shadow: 0 10px 30px rgba(47,191,113,0.35); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(47,191,113,0.5); }
+  .btn-ghost { border: 1px solid var(--line); background: rgba(255,255,255,0.03); }
+  .btn-ghost:hover { border-color: var(--turf); }
+
+  /* STATS STRIP */
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; margin-top: 64px;
+  }
+  .stat { background: rgba(12,25,19,0.85); padding: 24px; }
+  .stat .num { font-family: 'Bebas Neue'; font-size: 52px; color: var(--gold); line-height: 1; }
+  .stat .label { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; }
+
+  /* SECTIONS */
+  section { padding: 110px 0; }
+  .section-head { margin-bottom: 48px; }
+  .section-head .kicker { color: var(--signal); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; }
+  .section-head h2 { font-size: clamp(44px, 6vw, 76px); margin-top: 8px; }
+  .section-head p { color: var(--muted); max-width: 620px; margin-top: 12px; font-size: 17px; }
+
+  /* TEAMS */
+  .controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 32px; }
+  .toggle { display: inline-flex; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+  .toggle button {
+    background: none; border: none; color: var(--muted); font: inherit; font-weight: 700;
+    padding: 9px 20px; border-radius: 999px; cursor: pointer; transition: all .2s;
+  }
+  .toggle button.active { background: var(--turf); color: #04170d; }
+  .search {
+    flex: 1; min-width: 200px; max-width: 320px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 12px 20px; color: var(--text); font: inherit; outline: none;
+  }
+  .search:focus { border-color: var(--turf); }
+  .divisions { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 20px; }
+  .division {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px;
+  }
+  .division h3 {
+    font-family: 'Bebas Neue'; font-size: 26px; letter-spacing: 1px; margin-bottom: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .division h3 span.tag {
+    font-family: 'Archivo'; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 999px;
+  }
+  .tag.afc { background: rgba(255,107,44,0.15); color: var(--signal); }
+  .tag.nfc { background: rgba(80,150,255,0.15); color: #7fb2ff; }
+  .team {
+    display: flex; align-items: center; gap: 14px; padding: 10px; border-radius: 10px;
+    cursor: pointer; transition: background .2s, transform .2s;
+  }
+  .team:hover { background: rgba(255,255,255,0.05); transform: translateX(4px); }
+  .chip {
+    width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+    font-family: 'Bebas Neue'; font-size: 18px; letter-spacing: .5px; flex-shrink: 0;
+    border: 3px solid; box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  }
+  .team .name { font-weight: 700; line-height: 1.2; }
+  .team .city { color: var(--muted); font-size: 13px; }
+  .team .rings { margin-left: auto; color: var(--gold); font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .hidden { display: none !important; }
+
+  /* MODAL */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    width: 100%; max-width: 440px; border-radius: 20px; overflow: hidden;
+    background: var(--card); border: 1px solid var(--line);
+    animation: pop .25s ease;
+  }
+  @keyframes pop { from { transform: scale(.92); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+  .modal-top { padding: 32px 28px; position: relative; }
+  .modal-top .big { font-family: 'Bebas Neue'; font-size: 64px; line-height: .9; }
+  .modal-top .sub { opacity: .85; font-weight: 600; margin-top: 6px; }
+  .modal-body { padding: 24px 28px 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .modal-body .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .modal-body .v { font-weight: 700; font-size: 18px; }
+  .close {
+    position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(0,0,0,0.3); border: none; color: #fff; font-size: 18px; cursor: pointer;
+  }
+
+  /* HOW IT WORKS */
+  .season { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; position: relative; }
+  .phase {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px 24px;
+    position: relative; overflow: hidden;
+  }
+  .phase .month { color: var(--turf); font-weight: 800; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .phase h4 { font-family: 'Bebas Neue'; font-size: 34px; margin: 8px 0; letter-spacing: 1px; }
+  .phase p { color: var(--muted); font-size: 15px; }
+  .phase .n {
+    position: absolute; right: 14px; bottom: -14px; font-family: 'Bebas Neue';
+    font-size: 110px; color: rgba(255,255,255,0.04);
+  }
+
+  /* SCORING */
+  .scoring { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .score {
+    text-align: center; padding: 30px 14px; border-radius: var(--radius);
+    background: linear-gradient(180deg, var(--card), var(--bg-2)); border: 1px solid var(--line);
+    transition: transform .25s, border-color .25s;
+  }
+  .score:hover { transform: translateY(-6px); border-color: var(--turf); }
+  .score .pts { font-family: 'Bebas Neue'; font-size: 80px; line-height: 1; color: var(--turf); }
+  .score .what { font-weight: 800; margin-top: 6px; }
+  .score .desc { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+  .field {
+    margin-top: 40px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line);
+    display: grid; grid-template-columns: 1fr 10fr 1fr; height: 160px;
+  }
+  .endzone { display: grid; place-items: center; font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 3px; writing-mode: vertical-rl; }
+  .endzone.a { background: var(--signal); color: #2a0e02; }
+  .endzone.b { background: #3b6fd8; color: #06183d; transform: rotate(180deg); }
+  .turf {
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.35) 0 2px, transparent 2px 10%),
+      repeating-linear-gradient(90deg, #1f8a4c 0 10%, #1b7a43 10% 20%);
+    display: flex; align-items: center; justify-content: space-around;
+    font-family: 'Bebas Neue'; font-size: 28px; color: rgba(255,255,255,0.75);
+  }
+  .field-caption { color: var(--muted); font-size: 14px; margin-top: 12px; text-align: center; }
+
+  /* SUPER BOWL */
+  .sb-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: start; }
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(var(--gold), transparent); }
+  .game { position: relative; padding: 0 0 26px; }
+  .game::before {
+    content: ''; position: absolute; left: -27px; top: 6px; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--bg); border: 3px solid var(--gold);
+  }
+  .game .yr { color: var(--gold); font-weight: 800; font-size: 13px; letter-spacing: 1px; }
+  .game .matchup { font-weight: 700; font-size: 18px; }
+  .game .final { color: var(--muted); font-size: 14px; }
+  .leaders { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; }
+  .leaders h3 { font-family: 'Bebas Neue'; font-size: 32px; letter-spacing: 1px; margin-bottom: 20px; }
+  .bar-row { margin-bottom: 16px; }
+  .bar-row .top { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .bar { height: 10px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; }
+  .bar span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--gold), var(--signal)); width: 0; transition: width 1.2s cubic-bezier(.2,.8,.2,1); }
+
+  /* HISTORY */
+  .history { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .fact { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; }
+  .fact .year { font-family: 'Bebas Neue'; font-size: 54px; color: var(--signal); line-height: 1; }
+  .fact h4 { font-size: 18px; margin: 8px 0 6px; }
+  .fact p { color: var(--muted); font-size: 15px; }
+
+  footer { border-top: 1px solid var(--line); padding: 40px 0; color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  footer strong { color: var(--text); }
+  footer code { color: var(--turf); font-family: ui-monospace, monospace; }
+
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity .8s, transform .8s; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 900px) {
+    .links { display: none; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .season { grid-template-columns: 1fr 1fr; }
+    .scoring { grid-template-columns: repeat(2, 1fr); }
+    .sb-layout { grid-template-columns: 1fr; }
+    .history { grid-template-columns: 1fr; }
+    .turf { font-size: 18px; }
+  }
+  @media (max-width: 520px) {
+    .season { grid-template-columns: 1fr; }
+    .field { height: 110px; }
+    .turf span:nth-child(even) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#" class="brand"><span class="ball"></span>THE GRIDIRON</a>
+    <div class="links">
+      <a href="#teams">Teams</a>
+      <a href="#season">Season</a>
+      <a href="#scoring">Scoring</a>
+      <a href="#superbowl">Super Bowl</a>
+      <a href="#history">History</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="yard-numbers"><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>40</span><span>30</span><span>20</span><span>10</span></div>
+  <div class="wrap">
+    <span class="eyebrow"><span class="dot"></span>A fan's guide to pro football</span>
+    <h1 class="display">32 Teams.<br><span class="outline">17 Games.</span><br><span class="accent">One Trophy.</span></h1>
+    <p class="lead">Everything you need to follow the National Football League, from how the season works to who has the most rings.</p>
+    <div class="cta-row">
+      <a href="#teams" class="btn btn-primary">Explore the teams</a>
+      <a href="#scoring" class="btn btn-ghost">Football 101</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num" data-count="32">0</div><div class="label">Teams</div></div>
+      <div class="stat"><div class="num" data-count="8">0</div><div class="label">Divisions</div></div>
+      <div class="stat"><div class="num" data-count="272">0</div><div class="label">Regular season games</div></div>
+      <div class="stat"><div class="num" data-count="14">0</div><div class="label">Playoff spots</div></div>
+    </div>
+  </div>
+</header>
+
+<section id="teams">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker">The League</div>
+      <h2 class="display">Meet all 32 teams</h2>
+      <p>Two conferences, four divisions each, four teams per division. Click any team for a quick profile.</p>
+    </div>
+    <div class="controls reveal">
+      <div class="toggle" id="confToggle">
+        <button class="active" data-conf="ALL">All</button>
+        <button data-conf="AFC">AFC</button>
+        <button data-conf="NFC">NFC</button>
+      </div>
+      <input class="search" id="search" type="text" placeholder="Search a team or city...">
+    </div>
+    <div class="divisions" id="divisions"></div>
+  </div>
+</section>
+
+<section id="season" style="background: var(--bg-2);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker">How it works</div>
+      <h2 class="display">The road to February</h2>
+      <p>The NFL season runs from late summer to mid-winter, and every game matters because there are so few of them.</p>
+    </div>
+    <div class="season">
+      <div class="phase reveal"><div class="month">August</div><h4>Preseason</h4><p>Teams trim their rosters down to 53 players and test young talent in exhibition games.</p><span class="n">1</span></div>
+      <div class="phase reveal"><div class="month">Sept to Jan</div><h4>Regular Season</h4><p>17 games over 18 weeks, with each team getting one bye week to rest.</p><span class="n">2</span></div>
+      <div class="phase reveal"><div class="month">January</div><h4>Playoffs</h4><p>Seven teams per conference make it. The top seed gets a bye, and every round after that is win or go home.</p><span class="n">3</span></div>
+      <div class="phase reveal"><div class="month">February</div><h4>Super Bowl</h4><p>The AFC and NFC champions meet in one game for the Lombardi Trophy.</p><span class="n">4</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="scoring">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker">Football 101</div>
+      <h2 class="display">How points are scored</h2>
+      <p>The offense gets four downs to move the ball 10 yards. Make it, and you get a fresh set of downs. Don't, and you usually punt it away.</p>
+    </div>
+    <div class="scoring">
+      <div class="score reveal"><div class="pts">6</div><div class="what">Touchdown</div><div class="desc">Carry or catch the ball in the end zone</div></div>
+      <div class="score reveal"><div class="pts">3</div><div class="what">Field Goal</div><div class="desc">Kick it through the uprights</div></div>
+      <div class="score reveal"><div class="pts">2</div><div class="what">Safety</div><div class="desc">Tackle the ball carrier in his own end zone</div></div>
+      <div class="score reveal"><div class="pts">2</div><div class="what">Two-Point Try</div><div class="desc">Score again from the 2 after a TD</div></div>
+      <div class="score reveal"><div class="pts">1</div><div class="what">Extra Point</div><div class="desc">Short kick after a touchdown</div></div>
+    </div>
+    <div class="field reveal">
+      <div class="endzone a">END ZONE</div>
+      <div class="turf"><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>40</span><span>30</span><span>20</span><span>10</span></div>
+      <div class="endzone b">END ZONE</div>
+    </div>
+    <p class="field-caption">The field: 100 yards long plus two 10-yard end zones, and 53⅓ yards wide.</p>
+  </div>
+</section>
+
+<section id="superbowl" style="background: var(--bg-2);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker">The Big Game</div>
+      <h2 class="display">Super Bowl champions</h2>
+      <p>The most recent title games, plus the franchises with the most championships.</p>
+    </div>
+    <div class="sb-layout">
+      <div class="timeline reveal" id="timeline"></div>
+      <div class="leaders reveal">
+        <h3>Most Super Bowl wins</h3>
+        <div id="bars"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="history">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker">Then & Now</div>
+      <h2 class="display">A century of football</h2>
+    </div>
+    <div class="history">
+      <div class="fact reveal"><div class="year">1920</div><h4>It starts in Canton</h4><p>The American Professional Football Association forms in Canton, Ohio. Two years later it renames itself the National Football League.</p></div>
+      <div class="fact reveal"><div class="year">1967</div><h4>The first Super Bowl</h4><p>The NFL champion meets the rival AFL champion in a game that would grow into the biggest event in American sports.</p></div>
+      <div class="fact reveal"><div class="year">1970</div><h4>The merger</h4><p>The NFL and AFL officially combine, creating the AFC and NFC conferences that still exist today.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><strong>The Gridiron</strong> by Mohamad Hammoudeh · IS373</div>
+    <div>Self-hosted on DigitalOcean with Docker, Traefik + GitHub Actions · Build <code id="build">__COMMIT__</code> · Fan project, not affiliated with the NFL</div>
+  </div>
+</footer>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-top" id="modalTop">
+      <button class="close" id="closeModal">✕</button>
+      <div class="big" id="mName"></div>
+      <div class="sub" id="mCity"></div>
+    </div>
+    <div class="modal-body">
+      <div><div class="k">Conference</div><div class="v" id="mConf"></div></div>
+      <div><div class="k">Division</div><div class="v" id="mDiv"></div></div>
+      <div><div class="k">Super Bowl wins</div><div class="v" id="mRings"></div></div>
+      <div><div class="k">Abbreviation</div><div class="v" id="mAbbr"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const divisions = [
+  { conf: 'AFC', name: 'AFC East', teams: [
+    ['BUF','Bills','Buffalo','#00338D','#C60C30',0],
+    ['MIA','Dolphins','Miami','#008E97','#FC4C02',2],
+    ['NE','Patriots','New England','#002244','#C60C30',6],
+    ['NYJ','Jets','New York','#125740','#FFFFFF',1]]},
+  { conf: 'AFC', name: 'AFC North', teams: [
+    ['BAL','Ravens','Baltimore','#241773','#9E7C0C',2],
+    ['CIN','Bengals','Cincinnati','#FB4F14','#000000',0],
+    ['CLE','Browns','Cleveland','#311D00','#FF3C00',0],
+    ['PIT','Steelers','Pittsburgh','#101820','#FFB612',6]]},
+  { conf: 'AFC', name: 'AFC South', teams: [
+    ['HOU','Texans','Houston','#03202F','#A71930',0],
+    ['IND','Colts','Indianapolis','#002C5F','#A2AAAD',2],
+    ['JAX','Jaguars','Jacksonville','#006778','#D7A22A',0],
+    ['TEN','Titans','Tennessee','#0C2340','#4B92DB',0]]},
+  { conf: 'AFC', name: 'AFC West', teams: [
+    ['DEN','Broncos','Denver','#FB4F14','#002244',3],
+    ['KC','Chiefs','Kansas City','#E31837','#FFB81C',4],
+    ['LV','Raiders','Las Vegas','#000000','#A5ACAF',3],
+    ['LAC','Chargers','Los Angeles','#0080C6','#FFC20E',0]]},
+  { conf: 'NFC', name: 'NFC East', teams: [
+    ['DAL','Cowboys','Dallas','#003594','#869397',5],
+    ['NYG','Giants','New York','#0B2265','#A71930',4],
+    ['PHI','Eagles','Philadelphia','#004C54','#A5ACAF',2],
+    ['WAS','Commanders','Washington','#5A1414','#FFB612',3]]},
+  { conf: 'NFC', name: 'NFC North', teams: [
+    ['CHI','Bears','Chicago','#0B162A','#C83803',1],
+    ['DET','Lions','Detroit','#0076B6','#B0B7BC',0],
+    ['GB','Packers','Green Bay','#203731','#FFB612',4],
+    ['MIN','Vikings','Minnesota','#4F2683','#FFC62F',0]]},
+  { conf: 'NFC', name: 'NFC South', teams: [
+    ['ATL','Falcons','Atlanta','#A71930','#000000',0],
+    ['CAR','Panthers','Carolina','#0085CA','#101820',0],
+    ['NO','Saints','New Orleans','#101820','#D3BC8D',1],
+    ['TB','Buccaneers','Tampa Bay','#D50A0A','#34302B',2]]},
+  { conf: 'NFC', name: 'NFC West', teams: [
+    ['ARI','Cardinals','Arizona','#97233F','#000000',0],
+    ['LAR','Rams','Los Angeles','#003594','#FFA300',2],
+    ['SF','49ers','San Francisco','#AA0000','#B3995D',5],
+    ['SEA','Seahawks','Seattle','#002244','#69BE28',2]]}
+];
+
+const recentSB = [
+  ['LX · 2026','Seahawks def. Patriots','29 to 13'],
+  ['LIX · 2025','Eagles def. Chiefs','40 to 22'],
+  ['LVIII · 2024','Chiefs def. 49ers','25 to 22 in overtime'],
+  ['LVII · 2023','Chiefs def. Eagles','38 to 35'],
+  ['LVI · 2022','Rams def. Bengals','23 to 20'],
+  ['LV · 2021','Buccaneers def. Chiefs','31 to 9'],
+  ['LIV · 2020','Chiefs def. 49ers','31 to 20']
+];
+
+// Build teams
+const grid = document.getElementById('divisions');
+const allTeams = [];
+divisions.forEach(d => {
+  const box = document.createElement('div');
+  box.className = 'division reveal';
+  box.dataset.conf = d.conf;
+  box.innerHTML = `<h3>${d.name.replace(d.conf + ' ', '')}<span class="tag ${d.conf.toLowerCase()}">${d.conf}</span></h3>`;
+  d.teams.forEach(t => {
+    const [abbr, name, city, c1, c2, rings] = t;
+    const el = document.createElement('div');
+    el.className = 'team';
+    el.dataset.search = (name + ' ' + city + ' ' + abbr).toLowerCase();
+    el.innerHTML = `
+      <div class="chip" style="background:${c1};border-color:${c2};color:${c2 === '#000000' || c2 === '#101820' ? '#fff' : c2}">${abbr}</div>
+      <div><div class="name">${name}</div><div class="city">${city}</div></div>
+      <div class="rings">${rings ? '🏆 ' + rings : ''}</div>`;
+    el.onclick = () => openModal({ abbr, name, city, c1, c2, rings, conf: d.conf, div: d.name });
+    box.appendChild(el);
+    allTeams.push(el);
+  });
+  grid.appendChild(box);
+});
+
+// Filters
+let conf = 'ALL';
+function applyFilter() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  document.querySelectorAll('.division').forEach(box => {
+    const confOk = conf === 'ALL' || box.dataset.conf === conf;
+    let visible = 0;
+    box.querySelectorAll('.team').forEach(t => {
+      const show = confOk && (!q || t.dataset.search.includes(q));
+      t.classList.toggle('hidden', !show);
+      if (show) visible++;
+    });
+    box.classList.toggle('hidden', visible === 0);
+  });
+}
+document.querySelectorAll('#confToggle button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#confToggle button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  conf = b.dataset.conf;
+  applyFilter();
+});
+document.getElementById('search').addEventListener('input', applyFilter);
+
+// Modal
+const modalBg = document.getElementById('modalBg');
+function openModal(t) {
+  document.getElementById('modalTop').style.background = `linear-gradient(135deg, ${t.c1}, ${t.c1} 60%, ${t.c2})`;
+  document.getElementById('mName').textContent = t.name;
+  document.getElementById('mCity').textContent = t.city;
+  document.getElementById('mConf').textContent = t.conf;
+  document.getElementById('mDiv').textContent = t.div;
+  document.getElementById('mRings').textContent = t.rings ? '🏆'.repeat(t.rings) : 'Still chasing one';
+  document.getElementById('mAbbr').textContent = t.abbr;
+  modalBg.classList.add('open');
+}
+document.getElementById('closeModal').onclick = () => modalBg.classList.remove('open');
+modalBg.onclick = e => { if (e.target === modalBg) modalBg.classList.remove('open'); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') modalBg.classList.remove('open'); });
+
+// Timeline
+document.getElementById('timeline').innerHTML = recentSB.map(g =>
+  `<div class="game"><div class="yr">SUPER BOWL ${g[0]}</div><div class="matchup">${g[1]}</div><div class="final">Final: ${g[2]}</div></div>`
+).join('');
+
+// Leaderboard bars
+const leaders = [];
+divisions.forEach(d => d.teams.forEach(t => { if (t[5] >= 4) leaders.push([t[1], t[5]]); }));
+leaders.sort((a, b) => b[1] - a[1]);
+document.getElementById('bars').innerHTML = leaders.map(l =>
+  `<div class="bar-row"><div class="top"><span>${l[0]}</span><span>${l[1]}</span></div><div class="bar"><span data-w="${(l[1] / 6) * 100}"></span></div></div>`
+).join('');
+
+// Scroll reveal + bar fill
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('in');
+      e.target.querySelectorAll('.bar span').forEach(s => s.style.width = s.dataset.w + '%');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// Count-up stats
+document.querySelectorAll('[data-count]').forEach(el => {
+  const target = +el.dataset.count;
+  const start = performance.now();
+  const dur = 1400;
+  function tick(now) {
+    const p = Math.min((now - start) / dur, 1);
+    el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+});
+</script>
+</body>
+</html>

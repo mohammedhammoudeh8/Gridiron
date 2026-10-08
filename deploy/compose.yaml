@@ -1,0 +1,44 @@
+# Server deployment config. GitHub Actions copies this file to ~/hosting on the droplet
+# and writes IMAGE=<dockerhub-user>/gridiron into ~/hosting/.env on every deploy.
+#
+# qa   -> https://qa.mohammedhammoudeh.duckdns.org  (image tag :qa,   from the qa branch)
+# prod -> https://mohammedhammoudeh.duckdns.org     (image tag :prod, from the main branch)
+
+services:
+  traefik:
+    image: traefik:v3
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.email=mfh@njit.edu
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    restart: unless-stopped
+
+  prod:
+    image: ${IMAGE:?IMAGE must be set in .env}:prod
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prod.rule=Host(`mohammedhammoudeh.duckdns.org`)
+      - traefik.http.routers.prod.entrypoints=websecure
+      - traefik.http.routers.prod.tls.certresolver=le
+    restart: unless-stopped
+
+  qa:
+    image: ${IMAGE:?IMAGE must be set in .env}:qa
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.qa.rule=Host(`qa.mohammedhammoudeh.duckdns.org`)
+      - traefik.http.routers.qa.entrypoints=websecure
+      - traefik.http.routers.qa.tls.certresolver=le
+    restart: unless-stopped

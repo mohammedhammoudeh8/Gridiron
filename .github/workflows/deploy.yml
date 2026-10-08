@@ -1,0 +1,111 @@
+name: CI/CD
+
+# qa branch   -> test, build, push :qa   -> deploy QA
+# main branch -> test, build, push :prod -> deploy production
+on:
+  push:
+    branches: [qa, main]
+    paths-ignore:
+      - "README.md"
+      - "evidence/**"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  TARGET: ${{ github.ref_name == 'main' && 'prod' || 'qa' }}
+  SITE_URL: ${{ github.ref_name == 'main' && 'https://mohammedhammoudeh.duckdns.org' || 'https://qa.mohammedhammoudeh.duckdns.org' }}
+
+jobs:
+  test:
+    name: Validate and smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate HTML
+        run: bash tests/validate.sh
+
+      - name: Build test image
+        run: docker build --build-arg COMMIT_SHA=${{ github.sha }} -t gridiron:test .
+
+      - name: Run container and check it serves the site
+        run: |
+          docker run -d --name smoke -p 8080:80 gridiron:test
+          for i in $(seq 1 15); do curl -fs http://localhost:8080/ > /dev/null && break; sleep 1; done
+          curl -fs http://localhost:8080/ | grep -q "The Gridiron"
+          curl -fs http://localhost:8080/version.txt | grep -q "${{ github.sha }}"
+          echo "Smoke test passed"
+
+  publish:
+    name: Build and push image
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tags.outputs.short }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute tags
+        id: tags
+        run: |
+          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/gridiron"
+          SHORT="${TARGET}-${GITHUB_SHA::7}"
+          echo "short=$SHORT" >> "$GITHUB_OUTPUT"
+          echo "list=$IMAGE:$TARGET,$IMAGE:$SHORT" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: COMMIT_SHA=${{ github.sha }}
+          tags: ${{ steps.tags.outputs.list }}
+
+  deploy:
+    name: Deploy to server
+    needs: publish
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name == 'main' && 'production' || 'qa' }}
+      url: ${{ github.ref_name == 'main' && 'https://mohammedhammoudeh.duckdns.org' || 'https://qa.mohammedhammoudeh.duckdns.org' }}
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/gridiron
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Copy deployment config to server
+        run: scp -i ~/.ssh/deploy_key deploy/compose.yaml "$SSH_USER@$SSH_HOST:~/hosting/compose.yaml"
+
+      - name: Pull new image and restart only this environment
+        run: |
+          ssh -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
+            "cd ~/hosting && echo IMAGE=$IMAGE > .env && docker compose pull $TARGET && docker compose up -d traefik $TARGET && docker image prune -f"
+
+      - name: Verify the live site is running this commit
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fs "$SITE_URL/version.txt" | grep -q "$GITHUB_SHA"; then
+              echo "$SITE_URL is serving $GITHUB_SHA"; exit 0
+            fi
+            sleep 5
+          done
+          echo "Site did not update"; exit 1
