@@ -27,12 +27,12 @@ Any push to `qa` or `main` triggers the workflow. The first job validates the HT
 
 ## Test Evidence
 
-**Image registry:** https://hub.docker.com/r/DOCKERHUB_USER/gridiron/tags
+**Image registry:** https://hub.docker.com/r/mohammedhammoudeh/gridiron/tags
 
 **Workflow runs**
-- QA run (visible change): ADD_LINK
-- Production run (same change promoted): ADD_LINK
-- Deployed commit / image tag: `ADD_TAG` (shown in the site footer and at `/version.txt`)
+- QA run (visible change): https://github.com/mohammedhammoudeh8/Gridiron/actions/runs/37846622203
+- Production run (same change promoted): https://github.com/mohammedhammoudeh8/Gridiron/actions/runs/37846951516
+- Deployed commit / image tag: `prod-a3229d2` (shown in the site footer and at `/version.txt`)
 
 **Visible change, QA then production**
 
